@@ -1,0 +1,175 @@
+SNAKE sn;
+FOOD ap;
+PVector dir, food;
+int scl = 20; //everything changes with scl(20), scl(20)=1Pixel
+int score = 0;
+PVector[] tail = new PVector[900];
+boolean death;
+float xspeed;
+float yspeed;
+float xt;
+float yt;
+
+
+void setup(){
+  size(600, 600, P2D);
+  sn = new SNAKE();
+  ap = new FOOD();
+  dir = new PVector();
+  frameRate(8);
+}
+  
+void draw(){
+  background(51);
+  ap.eat(sn);
+  die(sn);
+  sn.update();
+  sn.show();
+  sn.move();
+  sn.edge();
+  ap.show();
+  if(death){
+    ap.reset();
+    sn.reset();
+    score = 0;
+    death = false;
+   }
+  fill(255);
+  textSize(30);
+  text(score, width/2, 40);
+}
+
+  void die(SNAKE sn){
+  //checks if the distance of the tail and the head is less then one
+    for(int i = tail.length-1; i > tail.length-score-1; i--){
+      PVector head = new PVector(sn.x, sn.y);
+      PVector t = new PVector(tail[i].x, tail[i].y);
+      float d = dist(head.x, head.y, t.x, t.y);
+      if(d < scl/2){
+        death = true;
+      }
+    }
+    //loop to check every position of the array
+    //loop from highest position in the array to the last because tail[899] is behind the head
+}
+
+
+void keyPressed(){
+//if changing x can go up or own and if changing y can go left or right
+    if(keyCode == LEFT && xspeed == 0){
+     dir.set(-1, 0);
+    } else if(keyCode == DOWN && yspeed == 0){
+     dir.set(0, 1);
+    } else if(keyCode == UP && yspeed == 0){
+     dir.set(0, -1);
+    } else if(keyCode == RIGHT && xspeed == 0){
+     dir.set(1, 0);
+    }
+  
+  
+  
+}
+
+class FOOD{
+  
+  FOOD(){
+    reset();
+  }
+  
+  void reset(){
+  //multiple of scl(20)
+  int cols = floor(width/scl);
+  int rows = floor(height/scl);
+  food = new PVector(floor(random(1, cols)), floor(random(1, rows)));
+  food.mult(scl);
+  println(food);
+}
+
+  void show(){
+  stroke(200, 0, 0);
+  fill(255, 0, 0);
+  rect(food.x, food.y, scl, scl);
+  }
+  
+  void eat(SNAKE sn){
+  //if distance between food and head is less then one pick next location and score grows
+  float d = dist(sn.x, sn.y, food.x, food.y);
+    if(d < 1){
+      reset();
+      score++;
+   }
+    
+}
+  
+  
+  
+  
+}
+
+class SNAKE{
+  float x = width/2;
+  float y = height/2;
+  SNAKE(){
+    reset();
+  }
+  
+  
+  void reset(){
+   x = width/2;
+   y = height/2;
+    
+  }
+  
+  
+  void update(){
+     for(int i = 0; i < tail.length-1; i++){
+     //change positions from every higher position in the array to the one behind
+        tail[i]=tail[i+1];
+    }
+    //new vector for tail[899], behind the head
+      tail[tail.length-1] = new PVector(x, y);
+      x = x + xspeed*scl;
+      y = y + yspeed*scl;
+  }
+  
+  void show(){
+    stroke(100, 150, 50);
+    strokeWeight(2);
+    fill(100, 200, 50);
+    rectMode(CENTER);
+    //loop creating new positions based on score from the highest to the lowest becouse tail[899] is behind the head
+    for(int i = tail.length-1; i > tail.length-score-1; i--){
+      if(i < tail.length && i >= 0){
+      rect(tail[i].x, tail[i].y, scl, scl);
+    }
+    }
+    fill(100, 150, 50);
+    rect(x, y, scl, scl);
+  }
+  
+  void move(){
+   xspeed = dir.x;
+   yspeed = dir.y;
+  }
+  
+   void edge(){
+   //go back if pass the edge
+    if(x <= 0){
+      x = width-scl;
+    }
+    if(x >= width){
+      x = 0;
+    }
+     if(y <= 0){
+      y = height-scl;
+    }
+    if(y >= height){
+      y = 0;
+    }
+    
+  }
+  
+  
+
+  
+}
